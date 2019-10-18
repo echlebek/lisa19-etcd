@@ -8,6 +8,90 @@ eric@sensu.io
 http://sensu.io
 @EricChlebek
 
-* Start
+* Introduction
 
-Hello World
+About the Author
+
+- Works @ Sensu on the Sensu Go monitoring project.
+- Pythonista turned Gopher; moved to Go 6 years ago.
+- Experience in HPC, Bioinformatics, Ad-tech, Systems Monitoring.
+- BSc in Computer Science, but no formal education in distributed systems.
+
+* Introduction
+
+.image sensu-logo-horizontal.png _ 200
+
+- Sensu is a monitoring framework for heterogeneous systems.
+- For the purposes of this talk, Sensu is a scheduler for executing host-based checks on subscriber nodes.
+- Round robin scheduling is one of the key features of Sensu's scheduler.
+
+* Introduction
+
+.image sensu-logo-horizontal.png _ 200
+
+- By default, all systems execute their subscribed checks at every scheduling interval.
+- Some use cases are better suited a round-robin mode of scheduling (load-balanced websites, network switches)
+- Classic Sensu relied on RabbitMQ for round-robin scheduling, and Redis for state.
+
+* Introduction
+
+.image RabbitMQ-logo.svg _ 400
+
+- Classic Sensu uses RabbitMQ as a broker to distribute tasks to clients.
+- Single leader responsible for sending tasks to the queue.
+- Randomized consumption of tasks by clients.
+- In clustered/HA scenario, failure of the leader could be troublesome.
+
+* Introduction
+
+.image sensu_classic.svg _ 1000
+
+Classic Sensu Architecture
+
+* Introduction
+
+- Sensu Go is built around etcd, and does not support RabbitMQ.
+- I needed to come up with a model for round robin scheduling on etcd.
+- I didn't want to follow the single leader pattern.
+- I wanted round-robin scheduling to be as reliable as the store itself.
+- Need to tolerate the loss of either scheduler or worker nodes.
+- Would be nice to have a stable ordering of execution for round robin workers.
+
+* Introduction
+
+.image etcd-horizontal-color.svg _ 150
+
+_A_distributed,_reliable_key-value_store_for_the_most_critical_data_of_a_distributed_system_ (etcd.io)
+
+- Etcd is a distributed key-value database that uses Raft consensus.
+- Written in Go. No Java or C components.
+- Cross platform. Works on most Go compilation targets.
+- Uses the BoltDB embedded database, optimized for SSDs.
+- Uses gRPC as a transport, efficient RPC communication between peers and clients.
+
+* Etcd Explained
+
+.image etcd-horizontal-color.svg _ 150
+
+Why etcd?
+
+- Strongly consistent distributed key-value store.
+- Benchmarked at 10,000 transactions per second.
+- Can survive the loss of (n / 2) - 1 members.
+- MVCC transaction model.
+- Can be embedded in Go applications, no need for external dependency.
+- Our goal was to enable a straightforward clustering story for Sensu Go.
+
+* Raft Consensus Algorithm
+
+.image raft.png _ 400
+
+* Raft Consensus Algorithm
+
+- Created by Diego Ongaro and John Ousterhout at Stanford
+- Designed to maximize understandability
+- An algorithm for managing a replicated state machine and log
+
+* Raft Consensus Algorithm
+
+A replicated log

@@ -182,13 +182,31 @@ Replicated state machine architecture
 
 * Raft
 
-- Any concrete implementation of raft requires some sort of log compaction.
+- Any useful implementation of raft requires some sort of log compaction.
 - Many raft and paxos systems use snapshotting to deal with log compaction.
 - Snapshotting can be implemented in various ways.
 - After a snapshot, the log history to a certain point is compacted into a single entry.
 
 .image compactor.gif _ 800
 
-* Raft
+* etcd API
 
+What does the etcd API offer?
 
+- Key-value storage (range, put, delete)
+- Multi-version concurrency control
+- Transactions (single round trip)
+- Leases
+- Watchers
+
+* KV Storage
+
+.image putgetdel.svg _ 800
+
+* KV Storage
+
+.image range.svg _ 800
+
+* MVCC
+
+.image mvcc.svg _ 800

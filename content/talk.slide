@@ -8,18 +8,21 @@ eric@sensu.io
 http://sensu.io
 @EricChlebek
 
-* Introduction
+* About Me
 
-About the Author
+.link https://github.com/echlebek https://github.com/echlebek
 
 - Works @ Sensu on the Sensu Go monitoring project.
-- Pythonista turned Gopher; moved to Go 6 years ago.
 - Experience in HPC, Bioinformatics, Ad-tech, Systems Monitoring.
 - BSc in Computer Science, but no formal education in distributed systems.
 
+.image me.jpg _ 300
+
 * Introduction
 
-.image sensu-logo-horizontal.png _ 200
+* Introduction
+
+.image sensu-logo-horizontal.png _ 350
 
 - Sensu is a monitoring framework for heterogeneous systems.
 - For the purposes of this talk, Sensu is a scheduler for executing host-based checks on subscriber nodes.
@@ -69,11 +72,9 @@ _A_distributed,_reliable_key-value_store_for_the_most_critical_data_of_a_distrib
 - Uses the BoltDB embedded database, optimized for SSDs.
 - Uses gRPC as a transport, efficient RPC communication between peers and clients.
 
-* Etcd Explained
+* Why etcd?
 
 .image etcd-horizontal-color.svg _ 150
-
-Why etcd?
 
 - Strongly consistent distributed key-value store.
 - Benchmarked at 10,000 transactions per second.
@@ -82,16 +83,112 @@ Why etcd?
 - Can be embedded in Go applications, no need for external dependency.
 - Our goal was to enable a straightforward clustering story for Sensu Go.
 
+* Raft
+
 * Raft Consensus Algorithm
 
-.image raft.png _ 400
+.image raft.png _ 500
 
 * Raft Consensus Algorithm
 
 - Created by Diego Ongaro and John Ousterhout at Stanford
+- Their goal was to replace Paxos (Leslie Lamport)
 - Designed to maximize understandability
 - An algorithm for managing a replicated state machine and log
 
 * Raft Consensus Algorithm
 
-A replicated log
+- Why is it called raft?
+- A raft is several logs tied together...
+- A replicated log...
+
+* Raft Consensus Algorithm
+
+.image raft_deal_with_it.svg _ 500
+
+* Raft Consensus Algorithm
+
+- Raft is a consensus algorithm that is designed to maximize understandability.
+- The algorithm manages a replicated state machine and log.
+- Equivalent to Paxos-multi, in power and efficiency.
+- All algorithms of this class require a heartbeat, so raft has one too.
+- Timeouts determine if a member is no longer alive.
+
+* Raft
+
+What is a log?
+
+- A log is an append-only data structure.
+
+What is a state machine?
+
+- A state machine is a mathematical model for computation. It takes its input from a log.
+
+How does this apply to raft?
+
+- Each raft member has a state machine that consumes the replicated log. Because the log is guaranteed to be the same, the state machines will produce the same outputs.
+
+* Raft
+
+- Raft members are always in one of three states: leader, follower, candidate.
+- Elections are used to determine the class of each member.
+- If a follower has not seen a heartbeat for a long time, it establishes itself as a candidate and initiates an election.
+- The result of the election process is that the follower will become the leader, or another cluster member will become the leader, or a timeout will occur.
+
+* Raft
+
+Replicated state machine architecture
+
+.image raft.svg _ 800
+
+* Raft
+
+- Consensus algorithms guarantee safety: they will never produce an incorrect result under normal conditions. This includes network delays, partitions, and packet loss, message duplication, and reordering.
+- They are functional, AKA available, as long as a majority of their members are working and can communicate with one another.
+- They do not depend on timing to ensure consistency in their logs. Bad clocks can cause availability problems at worst.
+
+* Raft
+
+- Raft has become more popular than Paxos, as it is easier to understand, and implement.
+- Few people succeed in understanding Paxos, and it requires great effort to do so.
+- Even seasoned researchers struggle at understanding Paxos.
+
+.image noidea.jpg _ 500
+
+* Raft
+
+- Raft implements consensus by electing a leader, and making that leader responsible for managing the replicated log.
+- The leader accepts log entries from clients, replicates them to followers, and tells them when it is safe to apply the logs to their state machines.
+- Because the leader has the sole responsibility for managing the replicated log, it is free to append to the log in any way it likes.
+
+* Raft
+
+- Raft clusters are available as long as a majority of the members are working.
+- All raft cluster sizes are odd numbers. (1, 3, 5, 7, 9)
+- If 4 machines are members of a raft cluster, the cluster size is at least 5.
+
+* Raft
+
+- When more than (N/2 - 1) raft members fail, the cluster becomes unavailable.
+- In a net split, the minority partition will not be available.
+- This is essential to guarantee raft's correctness property.
+
+* Raft
+
+- The raft algorithm describes an infinitely growing log.
+- Infinitely growing logs don't work so well in practice...
+
+.image forever-ever.gif _ 600
+
+* Raft
+
+- Any concrete implementation of raft requires some sort of log compaction.
+- Many raft and paxos systems use snapshotting to deal with log compaction.
+- Snapshotting can be implemented in various ways.
+- After a snapshot, the log history to a certain point is compacted into a single entry.
+
+.image compactor.gif _ 800
+
+* Raft
+
+

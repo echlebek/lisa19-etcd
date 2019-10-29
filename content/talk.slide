@@ -21,6 +21,10 @@ http://sensu.io
 
 * Introduction
 
+.image ytho.jpg _ 500
+
+* Introduction
+
 .image sensu-logo-horizontal.png _ 350
 
 - Sensu is a monitoring framework for heterogeneous systems.
@@ -371,6 +375,7 @@ What does the etcd API offer?
 
 - I was fearful of handling leader failure correctly.
 - I believed that etcd provided the primitives for building a distributed, coordinated data structure.
+- I perceived the single-leader pattern to be less reliable.
 - It seemed more fun to do it this way.
 
 * "Does it scale?"

@@ -1,1 +1,1 @@
-web: ./bin/lisa19-etcd -base .
+web: ./bin/lisa19-etcd -base . -http ":${PORT}"

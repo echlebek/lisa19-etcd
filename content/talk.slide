@@ -1,5 +1,5 @@
 Creating A Distributed Round Robin Scheduler with Etcd
-A regular developer learns some things about distributed systems and reliability
+A developer learns some things about distributed systems and reliability
 Tags: etcd, roundrobin, sensu, sensu-go, scheduler, distributed, raft
 
 Eric Chlebek
@@ -14,7 +14,6 @@ http://sensu.io
 
 - Works @ Sensu on the Sensu Go monitoring project.
 - Experience in HPC, Bioinformatics, Ad-tech, Systems Monitoring.
-- BSc in Computer Science, but no formal education in distributed systems.
 
 .image me.jpg _ 300
 
@@ -53,6 +52,12 @@ Classic Sensu Architecture
 
 * Introduction
 
+.image sensu-go.svg _ 500
+
+Sensu Go Architecture
+
+* Introduction
+
 - Sensu Go is built around etcd, and does not support RabbitMQ.
 - I needed to come up with a model for round robin scheduling on etcd.
 - I didn't want to follow the single leader pattern.
@@ -77,7 +82,7 @@ _A_distributed,_reliable_key-value_store_for_the_most_critical_data_of_a_distrib
 .image etcd-horizontal-color.svg _ 150
 
 - Strongly consistent distributed key-value store.
-- Benchmarked at 10,000 transactions per second.
+- Benchmarked at tens of thousands of transactions per second.
 - Can survive the loss of (n / 2) - 1 members.
 - MVCC transaction model.
 - Can be embedded in Go applications, no need for external dependency.
@@ -91,10 +96,10 @@ _A_distributed,_reliable_key-value_store_for_the_most_critical_data_of_a_distrib
 
 * Raft Consensus Algorithm
 
-- Created by Diego Ongaro and John Ousterhout at Stanford
-- Their goal was to replace Paxos (Leslie Lamport)
-- Designed to maximize understandability
-- An algorithm for managing a replicated state machine and log
+- Created by Diego Ongaro and John Ousterhout at Stanford.
+- Their goal was to replace Paxos (Leslie Lamport).
+- Designed to maximize understandability.
+- An algorithm for managing a replicated state machine and log.
 
 * Raft Consensus Algorithm
 
@@ -110,7 +115,7 @@ _A_distributed,_reliable_key-value_store_for_the_most_critical_data_of_a_distrib
 
 - Raft is a consensus algorithm that is designed to maximize understandability.
 - The algorithm manages a replicated state machine and log.
-- Equivalent to Paxos-multi, in power and efficiency.
+- Equivalent to Multi-Paxos, in power and efficiency.
 - All algorithms of this class require a heartbeat, so raft has one too.
 - Timeouts determine if a member is no longer alive.
 
@@ -137,13 +142,13 @@ How does this apply to raft?
 
 * Raft
 
-Replicated state machine architecture
-
 .image raft.svg _ 800
+
+Replicated state machine architecture
 
 * Raft
 
-- Consensus algorithms guarantee safety: they will never produce an incorrect result under normal conditions. This includes network delays, partitions, and packet loss, message duplication, and reordering.
+- Consensus algorithms guarantee safety (even with network delays, partitions, and packet loss, message duplication, and reordering).
 - They are functional, AKA available, as long as a majority of their members are working and can communicate with one another.
 - They do not depend on timing to ensure consistency in their logs. Bad clocks can cause availability problems at worst.
 
@@ -189,6 +194,14 @@ Replicated state machine architecture
 
 .image compactor.gif _ 800
 
+* Raft Key Takeaways
+
+- Correctly implemented, a store built on raft will always be consistent.
+- If more than half of a raft cluster fails, the service becomes unavailable.
+- If a raft cluster is split in two, the smaller half becomes unavailable, while the larger half remains available, as long as it has a sufficient number of nodes.
+
+* Back to etcd
+
 * etcd API
 
 What does the etcd API offer?
@@ -210,3 +223,165 @@ What does the etcd API offer?
 * MVCC
 
 .image mvcc.svg _ 800
+
+* Transactions
+
+- etcd's transactions are a single round-trip
+- that means you can't read back a value, and then operate on it, transactionally
+- but you can execute comparisons server-side
+
+* Transactions
+
+.play ../txn/txn.go /func main/,/^}/
+
+* Leases
+
+.image lease.svg _ 800
+
+* Swiss Alps
+
+.image suisse.jpg _ 700
+
+* Leases (Keepalives)
+
+.image keepalive.svg _ 800
+
+* Leases (Keepalives)
+
+- When combined with keepalives, leases offer a powerful primitive for creating etcd database triggers.
+- In Sensu, leases are used for implementing vigilance control. When agents haven't been heard from for a long enough period, a leased key expires, which alerts the backend to the presence of failure.
+- Leased keys can be combined with watchers for some interesting control flow constructs.
+
+* Watchers
+
+.image watchers.svg _ 800
+
+* Leases and Watchers Together
+
+.image epic_handshake.jpg _ 800
+
+* Leases and Watchers Together
+
+.image watch_leased.svg _ 800
+
+* Mt. Baker
+
+.image baker.jpg _ 750
+
+* Lease and Watchers Together
+
+- Allows creating a distributed trigger
+- Semi-durable; can survive cluster downtime, but watch events are dropped if nobody is watching
+- Forms the basis of a round-robin ring
+
+* Round-robin ring
+
+- A round-robin ring is a circular list of workers.
+- The ring tracks which worker is the next to receive work.
+- On a configurable interval, the workers travel around the ring, waiting for their turn to work.
+- Unlike a token ring, the workers are not responsible for passing tokens to keep the ring mechanism working.
+
+* Round-robin ring
+
+- The round-robin ring is operated by one or more schedulers.
+- Any scheduler can add or remove workers from the ring.
+- The schedulers compete to advance the ring to the next position. (first write wins, lock-free)
+- When a worker's turn to work comes up, every scheduler is notified. (watcher)
+
+* Round-robin ring
+
+- Workers in the ring are leased; if not kept alive, they will expire.
+- This prevents the ring from containing workers that have failed. (eventually)
+- Ring is lexicographically ordered, like etcd keys.
+- The next worker to work is stored under a "next" key.
+- If the schedulers notice that a worker has expired, and would have been the next to work, they compete to advance the ring.
+
+* Round-robin ring
+
+- Schedulers can fail, need at least one to keep scheduling working.
+- If all schedulers fail, ring state is maintained.
+- etcd servers can fail, ring will keep working as long as a majority are healthy.
+- If etcd loses availability, ring state is maintained until restart.
+
+* Round-robin ring
+
+.image ring-seq-1.svg _ 600
+
+* Round-robin ring
+
+.image ring-seq-2.svg _ 600
+
+* Round-robin ring
+
+.image ring-seq-3.svg _ 600
+
+* Round-robin ring
+
+.image ring-seq-4.svg _ 600
+
+* Round-robin ring
+
+.image ring-seq-5.svg _ 600
+
+* Round-robin ring
+
+.image ring-seq-6.svg _ 600
+
+* Round-robin ring
+
+.image ring-seq-7.svg _ 600
+
+* Round-robin ring
+
+.image ring-seq-8.svg _ 600
+
+* Testing
+
+- Difficult to unit-test this library, eventually gave up.
+- etcd interfaces are not easy to mock out.
+- Created integration tests that run reasonably quickly.
+- Easy to set up multiple etcd instances in a single Go process.
+
+* Testing
+
+- Early versions of the ring were not very successful!
+- The first version lacked synchronization between the schedulers, and had unsolvable concurrency bugs.
+- Moving the trigger mechanism into etcd, using leases, solved the synchronization problem.
+
+* Testing
+
+- etcd failures.
+- Scheduler failures.
+- Worker failures.
+- Any combination of the above.
+
+* What have I learned?
+
+- The feature-set of etcd is quite interesting, and has some surprisingly powerful primitives.
+- Testing complex data structures, and coordination routines, remains tricky. I am still learning how to best approach this.
+- Lease expirations are remarkably un-performant. (Linear scan of all leases for every expiration, solved in etcd 3.4)
+
+* "Why didn't you use a regular database?"
+
+- It's complicated.
+- I would always rather use Postgres. It's awesome, and has a richer model for transactions.
+- Sometimes working within particular constraints can result in an interesting outcome.
+
+* "Why didn't you use the single-leader pattern, but with etcd?"
+
+- I was fearful of handling leader failure correctly.
+- I believed that etcd provided the primitives for building a distributed, coordinated data structure.
+- It seemed more fun to do it this way.
+
+* "Does it scale?"
+
+- I think so... more testing needed is needed here.
+- etcd watchers can scale surprisingly high with gRPC proxy - 1M watch events per second with 20 proxies.
+- etcd should be able to service hundreds of scheduler nodes, maybe even thousands.
+- A single scheduler should be able to handle thousands or tens of thousands of workers.
+
+* Open-source implementation
+
+Sensu's round-robin ring is available as a Go library under an MIT license.
+
+.link https://godoc.org/github.com/sensu/sensu-go/backend/ringv2 https://godoc.org/github.com/sensu/sensu-go/backend/ringv2

@@ -15,17 +15,17 @@ http://sensu.io
 - Works @ Sensu on the Sensu Go monitoring project.
 - Experience in HPC, Bioinformatics, Ad-tech, Systems Monitoring.
 
-.image me.jpg _ 300
+.image ./content/me.jpg _ 300
 
 * Introduction
 
 * Introduction
 
-.image ytho.jpg _ 500
+.image ./content/ytho.jpg _ 500
 
 * Introduction
 
-.image sensu-logo-horizontal.png _ 350
+.image ./content/sensu-logo-horizontal.png _ 350
 
 - Sensu is a monitoring framework for heterogeneous systems.
 - For the purposes of this talk, Sensu is a scheduler for executing host-based checks on subscriber nodes.
@@ -33,7 +33,7 @@ http://sensu.io
 
 * Introduction
 
-.image sensu-logo-horizontal.png _ 200
+.image ./content/sensu-logo-horizontal.png _ 200
 
 - By default, all systems execute their subscribed checks at every scheduling interval.
 - Some use cases are better suited a round-robin mode of scheduling (load-balanced websites, network switches)
@@ -41,7 +41,7 @@ http://sensu.io
 
 * Introduction
 
-.image RabbitMQ-logo.svg _ 400
+.image ./content/RabbitMQ-logo.svg _ 400
 
 - Classic Sensu uses RabbitMQ as a broker to distribute tasks to clients.
 - Single leader responsible for sending tasks to the queue.
@@ -50,13 +50,13 @@ http://sensu.io
 
 * Introduction
 
-.image sensu_classic.svg _ 1000
+.image ./content/sensu_classic.svg _ 1000
 
 Classic Sensu Architecture
 
 * Introduction
 
-.image sensu-go.svg _ 500
+.image ./content/sensu-go.svg _ 500
 
 Sensu Go Architecture
 
@@ -71,7 +71,7 @@ Sensu Go Architecture
 
 * Introduction
 
-.image etcd-horizontal-color.svg _ 150
+.image ./content/etcd-horizontal-color.svg _ 150
 
 _A_distributed,_reliable_key-value_store_for_the_most_critical_data_of_a_distributed_system_ (etcd.io)
 
@@ -83,7 +83,7 @@ _A_distributed,_reliable_key-value_store_for_the_most_critical_data_of_a_distrib
 
 * Why etcd?
 
-.image etcd-horizontal-color.svg _ 150
+.image ./content/etcd-horizontal-color.svg _ 150
 
 - Strongly consistent distributed key-value store.
 - Benchmarked at tens of thousands of transactions per second.
@@ -96,7 +96,7 @@ _A_distributed,_reliable_key-value_store_for_the_most_critical_data_of_a_distrib
 
 * Raft Consensus Algorithm
 
-.image raft.png _ 500
+.image ./content/raft.png _ 500
 
 * Raft Consensus Algorithm
 
@@ -113,7 +113,7 @@ _A_distributed,_reliable_key-value_store_for_the_most_critical_data_of_a_distrib
 
 * Raft Consensus Algorithm
 
-.image raft_deal_with_it.svg _ 500
+.image ./content/raft_deal_with_it.svg _ 500
 
 * Raft Consensus Algorithm
 
@@ -146,7 +146,7 @@ How does this apply to raft?
 
 * Raft
 
-.image raft.svg _ 800
+.image ./content/raft.svg _ 800
 
 Replicated state machine architecture
 
@@ -162,7 +162,7 @@ Replicated state machine architecture
 - Few people succeed in understanding Paxos, and it requires great effort to do so.
 - Even seasoned researchers struggle at understanding Paxos.
 
-.image noidea.jpg _ 500
+.image ./content/noidea.jpg _ 500
 
 * Raft
 
@@ -187,7 +187,7 @@ Replicated state machine architecture
 - The raft algorithm describes an infinitely growing log.
 - Infinitely growing logs don't work so well in practice...
 
-.image forever-ever.gif _ 600
+.image ./content/forever-ever.gif _ 600
 
 * Raft
 
@@ -196,7 +196,7 @@ Replicated state machine architecture
 - Snapshotting can be implemented in various ways.
 - After a snapshot, the log history to a certain point is compacted into a single entry.
 
-.image compactor.gif _ 800
+.image ./content/compactor.gif _ 800
 
 * Raft Key Takeaways
 
@@ -218,15 +218,15 @@ What does the etcd API offer?
 
 * KV Storage
 
-.image putgetdel.svg _ 800
+.image ./content/putgetdel.svg _ 800
 
 * KV Storage
 
-.image range.svg _ 800
+.image ./content/range.svg _ 800
 
 * MVCC
 
-.image mvcc.svg _ 800
+.image ./content/mvcc.svg _ 800
 
 * Transactions
 
@@ -236,19 +236,19 @@ What does the etcd API offer?
 
 * Transactions
 
-.play ../txn/txn.go /func main/,/^}/
+.play ./txn/txn.go /func main/,/^}/
 
 * Leases
 
-.image lease.svg _ 800
+.image ./content/lease.svg _ 800
 
 * Swiss Alps
 
-.image suisse.jpg _ 700
+.image ./content/suisse.jpg _ 700
 
 * Leases (Keepalives)
 
-.image keepalive.svg _ 800
+.image ./content/keepalive.svg _ 800
 
 * Leases (Keepalives)
 
@@ -258,19 +258,19 @@ What does the etcd API offer?
 
 * Watchers
 
-.image watchers.svg _ 800
+.image ./content/watchers.svg _ 800
 
 * Leases and Watchers Together
 
-.image epic_handshake.jpg _ 800
+.image ./content/epic_handshake.jpg _ 800
 
 * Leases and Watchers Together
 
-.image watch_leased.svg _ 800
+.image ./content/watch_leased.svg _ 800
 
 * Mt. Baker
 
-.image baker.jpg _ 750
+.image ./content/baker.jpg _ 750
 
 * Lease and Watchers Together
 
@@ -309,35 +309,35 @@ What does the etcd API offer?
 
 * Round-robin ring
 
-.image ring-seq-1.svg _ 600
+.image ./content/ring-seq-1.svg _ 600
 
 * Round-robin ring
 
-.image ring-seq-2.svg _ 600
+.image ./content/ring-seq-2.svg _ 600
 
 * Round-robin ring
 
-.image ring-seq-3.svg _ 600
+.image ./content/ring-seq-3.svg _ 600
 
 * Round-robin ring
 
-.image ring-seq-4.svg _ 600
+.image ./content/ring-seq-4.svg _ 600
 
 * Round-robin ring
 
-.image ring-seq-5.svg _ 600
+.image ./content/ring-seq-5.svg _ 600
 
 * Round-robin ring
 
-.image ring-seq-6.svg _ 600
+.image ./content/ring-seq-6.svg _ 600
 
 * Round-robin ring
 
-.image ring-seq-7.svg _ 600
+.image ./content/ring-seq-7.svg _ 600
 
 * Round-robin ring
 
-.image ring-seq-8.svg _ 600
+.image ./content/ring-seq-8.svg _ 600
 
 * Testing
 

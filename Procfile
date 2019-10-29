@@ -1,1 +1,1 @@
-web: ./bin/lisa19-etcd
+web: ./bin/lisa19-etcd -base .

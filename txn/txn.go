@@ -18,7 +18,7 @@ func newClient() *clientv3.Client {
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	return client
 }
 
 func main() {
@@ -31,7 +31,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	_, err = client.Txn(ctx).If(
+	_, err := client.Txn(ctx).If(
 		etcd.Compare(etcd.Value("foo"), "=", "bar"),
 	).Then(
 		etcd.OpPut("frob", "true"),
